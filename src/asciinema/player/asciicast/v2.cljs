@@ -11,12 +11,17 @@
       first))
 
 (defn build-frames [events width height idle-time-limit]
+  (print "EVENTS" events)
+  (defn spy [f]
+    (fn [& args]
+      (println "spy" (last args))
+      (apply f args)))
   (sequence (comp (filter #(= (second %) "o")) ; use only stdout events ("o")
                   (map (juxt first #(nth % 2))) ; take timestamp + data for each
                   (frames/to-relative-time-xf)
                   (frames/cap-relative-time-xf idle-time-limit)
                   (frames/to-absolute-time-xf)
-                  (frames/data-reductions-xf vt/feed-str (vt/make-vt width height)))
+                  (frames/data-reductions-xf (spy vt/feed-str) (vt/make-vt width height)))
             events))
 
 (defn initialize-asciicast [asciicast vt-width vt-height idle-time-limit]

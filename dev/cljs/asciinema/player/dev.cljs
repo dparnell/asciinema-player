@@ -26,9 +26,9 @@
   (str "data:application/json;base64," (-> poster-js clj->js js/JSON.stringify js/btoa)))
 
 (defonce options {:speed 1
-                  :auto-play false
+                  :auto-play true
                   :preload false
-                  :loop true
+                  :loop false
                   :poster "data:text/plain,\n\r  test \u001b[1;32msnapshot"
                   ;; :poster poster-base64-data-uri
                   ;; :poster poster-json
@@ -43,13 +43,14 @@
 
 ;; v1 format
 
-(defonce player-state (p/make-player-ratom "/asciicasts/21195.json" options))
+;; (defonce player-state (p/make-player-ratom "/asciicasts/21195.json" options))
 ;; (defonce player-state (p/make-player-ratom "/asciicasts/20055.json" options))
 ;; (defonce player-state (p/make-player-ratom "/asciicasts/frames-20055.json" options))
 
 ;; v2 format (stream)
 
-;; (defonce player-state (p/make-player-ratom "/asciicasts/live.json" options))
+(defonce player-state (p/make-player-ratom "/stream" (assoc options :type :stream)))
+#_(defonce player-state (p/make-player-ratom "/asciicasts/test.json" options))
 
 ;; (swap! player-state assoc :theme "solarized-dark")
 ;; (swap! player-state assoc :font-size "small")

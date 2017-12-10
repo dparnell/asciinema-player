@@ -19,8 +19,9 @@
     (map parse-json lines)))
 
 (defn load-from-map [thing vt-width vt-height idle-time-limit]
-  (when (= (:version thing) 1)
-    (v1/initialize-asciicast thing vt-width vt-height idle-time-limit)))
+  (case (:version thing)
+    1 (v1/initialize-asciicast thing vt-width vt-height idle-time-limit)
+    2 (v2/initialize-asciicast thing vt-width vt-height idle-time-limit)))
 
 (defn load-from-seq [thing vt-width vt-height idle-time-limit]
   (let [header (first thing)]
@@ -50,6 +51,7 @@
                            (sequential? thing) load-from-seq
                            (map? thing) load-from-map
                            :else nil)]
+         (println "LOAD?" thing)
          (loader thing vt-width vt-height idle-time-limit))
        (throw format-error))))
 
