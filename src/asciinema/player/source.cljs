@@ -305,20 +305,14 @@
 (defn es-message [payload]
   (js->clj (.parse js/JSON payload) :keywordize-keys true))
 
-(defn event-str [event]
-  (last event))
-
 (defn process-es-messages! [es-ch msg-ch]
   (go
-    (let [event (<! es-ch)
-          {:keys [time width height]} event
-          width (or width 100) height (or height 30)
+    (let [{:keys [width height]} (<! es-ch)
           stdout-ch (vts! width height msg-ch)]
       (loop []
-        (when-let [stdout (event-str (<! es-ch))]
+        (when-let [[_ _ stdout] (<! es-ch)]
           (>! stdout-ch stdout)
           (recur))))))
-
 
 (defn start-event-source! [url msg-ch]
   (let [es (js/EventSource. url)
