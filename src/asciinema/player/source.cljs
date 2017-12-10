@@ -305,19 +305,17 @@
 (defn es-message [payload]
   (js->clj (.parse js/JSON payload) :keywordize-keys true))
 
-(defn build-frame [event]
-  (last (es-message event)))
+(defn event-str [event]
+  (last event))
 
 (defn process-es-messages! [es-ch msg-ch]
   (go
     (let [event (<! es-ch)
-          {:keys [time width height stdout]} event
-          width (or width 100) height (or height 30) stdout (or stdout event)
+          {:keys [time width height]} event
+          width (or width 100) height (or height 30)
           stdout-ch (vts! width height msg-ch)]
-      (>! stdout-ch stdout)
       (loop []
-        (when-let [stdout (build-frame (<! es-ch))]
-          (print "STDOUT" stdout)
+        (when-let [stdout (event-str (<! es-ch))]
           (>! stdout-ch stdout)
           (recur))))))
 
@@ -326,21 +324,17 @@
   (let [es (js/EventSource. url)
         es-ch (atom nil)]
     (put! msg-ch (m/->SetLoading true))
-    (println "ES" es)
     (set! (.-onopen es) (fn []
-                          (println "onopen")
                           (let [command-ch (chan 10000 (map es-message))] ; 10000 to make enough buffer for very fast es producers
                             (reset! es-ch command-ch)
                             (process-es-messages! command-ch msg-ch)
                             (put! msg-ch (m/->SetPlaying true))
                             (put! msg-ch (m/->SetLoading false)))))
     (set! (.-onerror es) (fn [err]
-                           (println "onerror")
                            (close! @es-ch)
                            (reset! es-ch nil)
                            (put! msg-ch (m/->SetLoading true))))
     (set! (.-onmessage es) (fn [event]
-                             (println "onmessage")
                              (when-let [command-ch @es-ch]
                                (put! command-ch (.-data event)))))
     @es-ch))
@@ -368,7 +362,5 @@
     nil))
 
 (defmethod make-source :stream [url {:keys [auto-play]}]
-  (println "MAKING STREAM SOURCE")
-  ;; (asciicast/load {:version 2} 100 30 1000)
   (->Stream (atom nil) url auto-play (atom false)))
 

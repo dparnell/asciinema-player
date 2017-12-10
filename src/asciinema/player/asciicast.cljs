@@ -51,7 +51,6 @@
                            (sequential? thing) load-from-seq
                            (map? thing) load-from-map
                            :else nil)]
-         (println "LOAD?" thing)
          (loader thing vt-width vt-height idle-time-limit))
        (throw format-error))))
 
