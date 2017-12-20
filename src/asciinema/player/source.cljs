@@ -307,8 +307,9 @@
 
 (defn process-es-messages! [es-ch msg-ch]
   (go
-    (let [{:keys [width height]} (<! es-ch)
+    (let [{:keys [width height] :as metadata} (<! es-ch)
           stdout-ch (vts! width height msg-ch)]
+      (report-metadata metadata msg-ch)
       (loop []
         (when-let [[_ _ stdout] (<! es-ch)]
           (>! stdout-ch stdout)
