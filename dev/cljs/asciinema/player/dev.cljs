@@ -13,6 +13,7 @@
             [cljs.core.async :refer [chan >! <! put!]]
             [schema.core :as s]
             [goog.net.XhrIo :as xhr]
+            [goog.Uri :as uri]
             [clojure.string :as str])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
@@ -44,7 +45,10 @@
 
 ;; v2 format (stream)
 
-(defonce player-state (p/make-player-ratom "/stream" (assoc options :type :stream)))
+(def session
+  (or (-> js/location.href uri/parse .getQueryData (.get "session"))
+      (js/prompt "session id")))
+(defonce player-state (p/make-player-ratom (str "/stream/" session) (assoc options :type :stream)))
 #_(defonce player-state (p/make-player-ratom "/asciicasts/test.json" options))
 
 ;; (swap! player-state assoc :theme "solarized-dark")

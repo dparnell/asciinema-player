@@ -81,7 +81,20 @@
                                             :optimizations :advanced
                                             :elide-asserts true
                                             :source-map "resources/public/js/asciinema-player.js.map"
-                                            :pretty-print  false}}}}
+                                            :pretty-print  false}}
+                       :stream {:source-paths ["src" "dev"]
+                                :compiler {:output-to "resources/public/js/asciinema-stream.js"
+                                           :output-dir "resources/public/js/stream"
+                                           :closure-defines {goog.DEBUG false}
+                                           :preamble ["license.js" "public/CustomEvent.js" "public/CustomElements.min.js"]
+                                           :foreign-libs [{:file "public/element.js"
+                                                           :provides ["asciinema.player.element"]}
+                                                          {:file "codepoint-polyfill.js"
+                                                           :provides ["asciinema.vt.codepoint-polyfill"]}]
+                                           :optimizations :advanced
+                                           :elide-asserts true
+                                           :source-map "resources/public/js/asciinema-stream.js.map"
+                                           :pretty-print  false}}}}
 
   :figwheel {:http-server-root "public"
              :server-port 3449
