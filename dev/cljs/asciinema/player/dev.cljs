@@ -25,13 +25,13 @@
                   :auto-play true
                   :preload false
                   :loop false
-                  :poster "data:text/plain,\n\r  test \u001b[1;32msnapshot"
+                  :poster "data:text/plain,\n\r  \u001b[1;32mawaiting user input..."
                   ;; :poster poster-base64-data-uri
                   ;; :poster poster-json
-                  :title "Something cool"
-                  :author "sickill"
-                  :author-url "http://ku1ik.com/"
-                  :author-img-url "https://gravatar.com/avatar/2807e23da22a140cf573ea75b37d11f6?s=128&d=retro"})
+                  :title "Team Work"
+                  :author "usermotif"
+                  :author-url "https://usermotif.com/"
+                  :author-img-url "https://www.usermotif.com/assets/M_large.svg"})
 
 ;; old, preprocessed, pre-v1 format
 
