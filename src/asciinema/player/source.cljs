@@ -307,13 +307,19 @@
 
 (defn process-es-messages! [es-ch msg-ch]
   (go
-    (let [{:keys [width height] :as metadata} (<! es-ch)
-          stdout-ch (vts! width height msg-ch)]
-      (report-metadata metadata msg-ch)
-      (loop []
-        (when-let [[_ _ stdout] (<! es-ch)]
-          (>! stdout-ch stdout)
-          (recur))))))
+    (let [{:keys [width height] :as metadata} (<! es-ch)]
+      (if (map? metadata)
+        (let [stdout-ch (vts! width height msg-ch)]
+          (report-metadata metadata msg-ch)
+          (loop []
+            (when-let [[_ t stdout] (<! es-ch)]
+              (case t
+                "m" (let [[width height] stdout]
+                      (>! es-ch (.stringify js/JSON (js-obj "width" width "height" height)))
+                      (process-es-messages! es-ch msg-ch))
+                "o" (do (>! stdout-ch stdout)
+                        (recur))))))
+        (process-es-messages! es-ch msg-ch)))))
 
 (defn start-event-source! [url msg-ch]
   (let [es (js/EventSource. url)
@@ -358,4 +364,69 @@
 
 (defmethod make-source :stream [url {:keys [auto-play]}]
   (->Stream (atom nil) url auto-play (atom false)))
+
+
+
+(def width :width)
+(def height :height)
+(def char-attrs :char-attrs)
+(def next-print-wraps? :next-print-wraps)
+(def origin-mode? :origin-mode)
+(def auto-wrap-mode? :auto-wrap-mode)
+(def insert-mode? :insert-mode)
+(def new-line-mode? :new-line-mode)
+
+(def space 0x20)
+
+(def normal-char-attrs {})
+
+(defn cell
+  [ch char-attrs]
+  (vector ch char-attrs))
+
+(defn blank-cell
+  [char-attrs]
+  (cell space char-attrs))
+
+(defn blank-line
+  ([width] (blank-line width normal-char-attrs))
+  ([width char-attrs]
+   (vec (repeat width (blank-cell char-attrs)))))
+
+(defn blank-buffer
+  ([width height] (blank-buffer width height normal-char-attrs))
+  ([width height char-attrs]
+   (let [line (blank-line width char-attrs)]
+     (vec (repeat height line)))))
+
+(defn default-tabs
+  [width]
+  (apply sorted-set (range 8 width 8)))
+
+(defn resize-screen
+  [screen width height]
+  ;; {:width width
+  ;;  :height height
+  ;;  :bottom-margin (dec height)
+  ;;  :tabs (default-tabs width)
+  ;;  :lines (blank-buffer width height)}
+  (let [write-blanks (fn [blank filled]
+                       (let [nblanks (count blank)]
+                         (if (> nblanks (count filled))
+                           (into filled (subvec blank nblanks))
+                           (subvec filled 0 nblanks))))
+        merge-lines (fn [blank filled]
+                      (mapv write-blanks blank (write-blanks blank filled)))]
+    (-> screen
+      (assoc :width width
+             :height height
+             :tabs (default-tabs width)
+             ;; :bottom-margin (dec height)
+             )
+      (update :bottom-margin #(- height (- (:height screen) %)))
+      ;; (update :tabs (partial deep-merge (default-tabs width)))
+      (update :lines #(merge-lines (blank-buffer width height) %)))))
+
+(defn resize-vt [vt width height]
+  (update vt :screen resize-screen width height))
 
