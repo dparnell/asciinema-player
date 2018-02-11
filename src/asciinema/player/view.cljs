@@ -327,6 +327,9 @@
         (when (nil? message)
           (swap! channels disj channel))
 
+        (when (instance? m/SetMetadata message)
+          (swap! player-atom #(merge % message)))
+
         (when (satisfies? m/Update message)
           (swap! player-atom #(m/update-player message %)))
 
