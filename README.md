@@ -361,11 +361,11 @@ Make sure git submodules are fetched and up to date:
 
 Start local web server with auto-compilation and live code reloading in the browser:
 
-    lein figwheel dev
+    ./lein figwheel dev
 
 Start auto-compilation of `.less` files:
 
-    lein less auto
+    ./lein less auto
 
 Once the above tasks are running, open [localhost:3449](http://localhost:3449/)
 in the browser to load the player with sample asciicast. Any changes made to
@@ -374,15 +374,15 @@ player's state.
 
 Run tests with:
 
-    lein doo phantom test
+    ./lein doo phantom test
 
 ### Building from source
 
 To build stand-alone `.js` and `.css` files clone repository, initialize git
 submodules (as shown above), then run:
 
-    lein cljsbuild once release
-    lein less once
+    ./lein cljsbuild once release
+    ./lein less once
 
 This produces `resources/public/js/asciinema-player.js` and `resources/public/css/asciinema-player.css`.
 
